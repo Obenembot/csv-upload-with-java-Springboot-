@@ -43,7 +43,7 @@ public class TestEndpoints {
 
     @PutMapping("/saveStudent")
     public Student updateStudent(@RequestBody Student student){
-       // System.out.println("update: "+ student);
+        System.out.println("update: "+ student);
         return  student;
     }
 
