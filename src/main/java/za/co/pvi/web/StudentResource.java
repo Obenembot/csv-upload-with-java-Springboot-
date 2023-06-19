@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -134,9 +136,9 @@ public class StudentResource {
         return "student with id: " + student.getId() + " successfully deleted";
     }
 
-    @PostMapping(value ="/student/bulk",consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.TEXT_PLAIN_VALUE})
-    public void upload(@RequestPart("file") MultipartFile file){
-        List <Map<String, String>> list = CSVProcessor.ProcessFile(file);
+    @PostMapping(value = "/student/bulk", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.TEXT_PLAIN_VALUE})
+    public void upload(@RequestPart("file") MultipartFile file) {
+        List<Map<String, String>> list = CSVProcessor.ProcessFile(file);
 
         Gson gson = new Gson();
         JsonElement jsonElement = gson.toJsonTree(list);
@@ -144,5 +146,15 @@ public class StudentResource {
 
         List<Student> list1 = Arrays.asList(students);
         studentService.saveAll(list1);
+    }
+
+    @GetMapping("/student/download")
+    public ResponseEntity searchDownloadAssets(Pageable pageable) {
+        LOGGER.debug("REST request to search for a page of Assets for query {}", pageable);
+        byte[] myFile = studentService.searchDownload(pageable);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + "assets.csv");
+        return new ResponseEntity(myFile, httpHeaders, HttpStatus.OK);
     }
 }
